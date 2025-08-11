@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 interface Task {
   id: string;
@@ -9,8 +7,6 @@ interface Task {
   createdAt: string;
   completedBy?: string;
 }
-
-const API_BASE = '';
 
 export default function SimpleTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -22,7 +18,6 @@ export default function SimpleTasks() {
     return `${names[0]}_${randomNum}`;
   });
 
-  // Load tasks from API
   const loadTasks = async () => {
     try {
       const response = await fetch('/api/tasks');
@@ -88,97 +83,96 @@ export default function SimpleTasks() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    addTask();
-  };
-
-  const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.completed).length;
+  const totalTasks = tasks.length;
   const pendingTasks = totalTasks - completedTasks;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-md mx-auto p-6">
-        {/* Header */}
-        <h1 className="text-xl font-semibold text-center mb-4" data-testid="text-title">
-          Public Task Manager
-        </h1>
-        
-        {/* User indicator */}
-        <p className="text-sm text-gray-600 text-center mb-6" data-testid="text-user">
-          You: {userName}
-        </p>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Public Task Manager</h1>
+            <div className="flex items-center text-sm text-gray-600">
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md">
+                {userName}
+              </span>
+            </div>
+          </div>
 
-        {/* Add Task Form */}
-        <form onSubmit={handleSubmit} className="mb-6">
-          <div className="flex gap-2">
-            <Input
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-blue-600">{totalTasks}</div>
+              <div className="text-sm text-blue-600">Total</div>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-green-600">{completedTasks}</div>
+              <div className="text-sm text-green-600">Completed</div>
+            </div>
+            <div className="bg-orange-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-orange-600">{pendingTasks}</div>
+              <div className="text-sm text-orange-600">Pending</div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mb-6">
+            <input
               type="text"
-              placeholder="Add Task"
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              data-testid="input-new-task"
+              placeholder="Add a new task..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyPress={(e) => e.key === 'Enter' && addTask()}
+              disabled={isLoading}
             />
-            <Button 
-              type="submit"
+            <button
+              onClick={addTask}
               disabled={isLoading || !newTaskTitle.trim()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-              data-testid="button-add-task"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add
-            </Button>
+              {isLoading ? '...' : '+'}
+            </button>
           </div>
-        </form>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold" data-testid="text-total-count">{totalTasks}</div>
-            <div className="text-sm text-gray-600" data-testid="text-total-label">Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold" data-testid="text-completed-count">{completedTasks}</div>
-            <div className="text-sm text-gray-600" data-testid="text-completed-label">Completed</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold" data-testid="text-pending-count">{pendingTasks}</div>
-            <div className="text-sm text-gray-600" data-testid="text-pending-label">Pending</div>
-          </div>
-        </div>
-
-        {/* Task List */}
-        <div className="space-y-2">
-          {tasks.length === 0 ? (
-            <p className="text-center text-gray-500 py-8" data-testid="text-no-tasks">
-              No tasks yet. Add your first task above!
-            </p>
-          ) : (
-            tasks.map((task) => (
-              <div 
-                key={task.id} 
-                className={`flex items-center gap-3 p-3 border rounded ${
-                  task.completed ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-300'
-                }`}
-                data-testid={`task-item-${task.id}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => toggleTask(task.id)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                  data-testid={`checkbox-task-${task.id}`}
-                />
-                <span 
-                  className={`flex-1 ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}
-                  data-testid={`text-task-title-${task.id}`}
-                >
-                  {task.title}
-                </span>
+          <div className="space-y-2">
+            {tasks.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                No tasks yet. Add one above!
               </div>
-            ))
-          )}
+            ) : (
+              tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border ${
+                    task.completed 
+                      ? 'bg-green-50 border-green-200' 
+                      : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => toggleTask(task.id)}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span
+                    className={`flex-1 ${
+                      task.completed 
+                        ? 'line-through text-gray-500' 
+                        : 'text-gray-900'
+                    }`}
+                  >
+                    {task.title}
+                  </span>
+                  {task.completed && task.completedBy && (
+                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                      ✓ {task.completedBy}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
