@@ -8,7 +8,7 @@ import type { Task, InsertTask, UpdateTask } from "@shared/schema";
 
 interface TaskFormProps {
   task?: Task;
-  onSubmit: (data: InsertTask | UpdateTask) => void;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }

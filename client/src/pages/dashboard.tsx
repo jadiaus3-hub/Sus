@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/queryClient";
+import { localStorageService } from "@/lib/storage";
 import Header from "@/components/header";
 import StatsCards from "@/components/stats-cards";
 import TaskList from "@/components/task-list";
@@ -23,25 +23,24 @@ export default function Dashboard() {
 
   // Fetch tasks
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
-    queryKey: ["/api/tasks"],
+    queryKey: ["tasks"],
+    queryFn: localStorageService.getAllTasks,
     refetchInterval: false,
   });
 
   // Fetch stats
   const { data: stats } = useQuery({
-    queryKey: ["/api/tasks/stats"],
+    queryKey: ["tasks", "stats"],
+    queryFn: localStorageService.getTaskStats,
     refetchInterval: false,
   });
 
   // Create task mutation
   const createTaskMutation = useMutation({
-    mutationFn: async (taskData: InsertTask) => {
-      const response = await apiRequest("POST", "/api/tasks", taskData);
-      return response.json();
-    },
+    mutationFn: localStorageService.createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
       setShowCreateModal(false);
       toast({
         title: "Success",
@@ -60,12 +59,11 @@ export default function Dashboard() {
   // Update task mutation
   const updateTaskMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: UpdateTask }) => {
-      const response = await apiRequest("PATCH", `/api/tasks/${id}`, updates);
-      return response.json();
+      return localStorageService.updateTask(id, updates);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
       setEditingTask(null);
       toast({
         title: "Success",
@@ -83,12 +81,10 @@ export default function Dashboard() {
 
   // Delete task mutation
   const deleteTaskMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/tasks/${id}`);
-    },
+    mutationFn: localStorageService.deleteTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
       toast({
         title: "Success",
         description: "Task deleted successfully!",
@@ -116,7 +112,7 @@ export default function Dashboard() {
     return matchesSearch;
   });
 
-  const handleCreateTask = (taskData: InsertTask) => {
+  const handleCreateTask = (taskData: any) => {
     createTaskMutation.mutate(taskData);
   };
 
