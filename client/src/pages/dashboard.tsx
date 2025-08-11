@@ -37,7 +37,17 @@ export default function Dashboard() {
 
   // Create task mutation
   const createTaskMutation = useMutation({
-    mutationFn: localStorageService.createTask,
+    mutationFn: async (taskData: any) => {
+      console.log("Creating task with data:", taskData);
+      try {
+        const result = await localStorageService.createTask(taskData);
+        console.log("Task created successfully:", result);
+        return result;
+      } catch (error) {
+        console.error("Error in createTask:", error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
@@ -47,7 +57,8 @@ export default function Dashboard() {
         description: "Task created successfully!",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Mutation error:", error);
       toast({
         title: "Error",
         description: "Failed to create task. Please try again.",

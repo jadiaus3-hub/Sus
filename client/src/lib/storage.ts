@@ -9,22 +9,28 @@ class LocalStorage {
   }
 
   private initializeDemo() {
-    const tasks = this.getTasks();
-    if (tasks.length === 0) {
-      // Create demo task on first load
-      const demoTask: Task = {
-        id: this.generateId(),
-        title: "ทดสอบ Task แรก",
-        description: "นี่คือ task ทดสอบเพื่อให้แน่ใจว่าระบบทำงานปกติ",
-        priority: "medium",
-        status: "todo",
-        dueDate: null,
-        assignee: null,
-        completed: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      localStorage.setItem(this.TASKS_KEY, JSON.stringify([demoTask]));
+    try {
+      const tasks = this.getTasks();
+      if (tasks.length === 0) {
+        console.log("Initializing with demo task");
+        // Create demo task on first load
+        const demoTask: Task = {
+          id: this.generateId(),
+          title: "ทดสอบ Task แรก",
+          description: "นี่คือ task ทดสอบเพื่อให้แน่ใจว่าระบบทำงานปกติ",
+          priority: "medium",
+          status: "todo",
+          dueDate: null,
+          assignee: null,
+          completed: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        localStorage.setItem(this.TASKS_KEY, JSON.stringify([demoTask]));
+        console.log("Demo task created:", demoTask);
+      }
+    } catch (error) {
+      console.error("Error initializing demo:", error);
     }
   }
 
@@ -64,26 +70,42 @@ class LocalStorage {
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
-    const tasks = this.getTasks();
-    const id = this.generateId();
-    const now = new Date();
+    console.log("createTask called with:", insertTask);
     
-    const task: Task = {
-      id,
-      title: insertTask.title,
-      description: insertTask.description || null,
-      priority: insertTask.priority || "medium",
-      status: insertTask.status || "todo",
-      dueDate: insertTask.dueDate || null,
-      assignee: insertTask.assignee || null,
-      completed: false,
-      createdAt: now,
-      updatedAt: now,
-    };
+    try {
+      const tasks = this.getTasks();
+      console.log("Current tasks:", tasks.length);
+      
+      const id = this.generateId();
+      const now = new Date();
+      
+      const task: Task = {
+        id,
+        title: insertTask.title,
+        description: insertTask.description || null,
+        priority: insertTask.priority || "medium",
+        status: insertTask.status || "todo",
+        dueDate: insertTask.dueDate || null,
+        assignee: insertTask.assignee || null,
+        completed: false,
+        createdAt: now,
+        updatedAt: now,
+      };
 
-    tasks.push(task);
-    this.saveTasks(tasks);
-    return task;
+      console.log("New task created:", task);
+      tasks.push(task);
+      this.saveTasks(tasks);
+      console.log("Task saved. Total tasks now:", tasks.length);
+      
+      // Verify save worked
+      const verification = this.getTasks();
+      console.log("Verification - tasks in storage:", verification.length);
+      
+      return task;
+    } catch (error) {
+      console.error("Error in createTask:", error);
+      throw error;
+    }
   }
 
   async updateTask(id: string, updates: UpdateTask): Promise<Task | undefined> {
