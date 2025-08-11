@@ -5,10 +5,10 @@ import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all tasks
+  // Simple tasks routes for public server
   app.get("/api/tasks", async (req, res) => {
     try {
-      const tasks = await storage.getTasks();
+      const tasks = await storage.getSimpleTasks();
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tasks" });
@@ -38,8 +38,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create task
+  // Create simple task
   app.post("/api/tasks", async (req, res) => {
+    try {
+      const { title, createdBy } = req.body;
+      if (!title || typeof title !== 'string') {
+        return res.status(400).json({ message: "Title is required" });
+      }
+      
+      const task = await storage.createSimpleTask({ title, createdBy });
+      res.status(201).json(task);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  // Update simple task
+  app.patch("/api/tasks/:id", async (req, res) => {
+    try {
+      const task = await storage.updateSimpleTask(req.params.id, req.body);
+      res.json(task);
+    } catch (error: any) {
+      if (error.message && error.message.includes('not found')) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  // Delete simple task
+  app.delete("/api/tasks/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteSimpleTask(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // Advanced tasks routes (original complex tasks)
+  app.get("/api/advanced/tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getTasks();
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.post("/api/advanced/tasks", async (req, res) => {
     try {
       const validatedData = insertTaskSchema.parse(req.body);
       const task = await storage.createTask(validatedData);
@@ -52,8 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update task
-  app.patch("/api/tasks/:id", async (req, res) => {
+  app.patch("/api/advanced/tasks/:id", async (req, res) => {
     try {
       const validatedData = updateTaskSchema.parse(req.body);
       const task = await storage.updateTask(req.params.id, validatedData);
@@ -69,8 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete task
-  app.delete("/api/tasks/:id", async (req, res) => {
+  app.delete("/api/advanced/tasks/:id", async (req, res) => {
     try {
       const success = await storage.deleteTask(req.params.id);
       if (!success) {

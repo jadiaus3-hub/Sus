@@ -2,52 +2,124 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, RefreshCw, Users } from "lucide-react";
 
 interface Task {
   id: string;
   title: string;
   completed: boolean;
+  createdAt: string;
+  completedBy?: string;
 }
+
+const API_BASE = '';  // Use relative URLs for both dev and production
+
+// Debug API connection
+console.log('API Base:', API_BASE || 'same origin');
 
 export default function SimpleTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [userName] = useState(() => {
+    // Generate simple user name for tracking who did what
+    const names = ['User', 'Guest', 'Visitor', 'Team Member'];
+    const randomName = names[Math.floor(Math.random() * names.length)];
+    const randomNum = Math.floor(Math.random() * 1000);
+    return `${randomName}_${randomNum}`;
+  });
 
-  // Load tasks from localStorage on mount
-  useEffect(() => {
-    const savedTasks = localStorage.getItem("simple-tasks");
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
+  // Load tasks from server
+  const loadTasks = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Tasks loaded:', data);
+        setTasks(data);
+      } else {
+        console.error('Failed to fetch tasks:', response.status, await response.text());
+      }
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // Auto-refresh every 5 seconds to see others' updates
+  useEffect(() => {
+    loadTasks();
+    const interval = setInterval(loadTasks, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Save tasks to localStorage whenever tasks change
-  useEffect(() => {
-    localStorage.setItem("simple-tasks", JSON.stringify(tasks));
-  }, [tasks]);
-
-  const addTask = () => {
+  const addTask = async () => {
     if (!newTaskTitle.trim()) return;
     
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle.trim(),
-      completed: false,
-    };
-    
-    setTasks([...tasks, newTask]);
-    setNewTaskTitle("");
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title: newTaskTitle.trim(),
+          createdBy: userName
+        })
+      });
+      
+      if (response.ok) {
+        setNewTaskTitle("");
+        await loadTasks(); // Refresh to see the new task
+      }
+    } catch (error) {
+      console.error('Failed to add task:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const deleteTask = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        await loadTasks(); // Refresh to see the changes
+      }
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const toggleTask = (id: string) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
+  const toggleTask = async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          completed: !task.completed,
+          completedBy: !task.completed ? userName : undefined
+        })
+      });
+      
+      if (response.ok) {
+        await loadTasks(); // Refresh to see the changes
+      }
+    } catch (error) {
+      console.error('Failed to toggle task:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -60,11 +132,27 @@ export default function SimpleTasks() {
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Plus className="h-4 w-4 text-white" />
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+                Public Task Manager
               </div>
-              Simple Task Manager
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Users className="h-4 w-4" />
+                <span>You: {userName}</span>
+                {isLoading && <span className="text-blue-500">(Syncing...)</span>}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={loadTasks}
+                  disabled={isLoading}
+                  data-testid="button-refresh"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           
