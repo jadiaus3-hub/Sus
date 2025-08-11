@@ -5,16 +5,20 @@
       "runtime": "@vercel/node@3.2.22"
     }
   },
-  "buildCommand": "cd client && npm run build",
-  "outputDirectory": "client/dist",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/tasks",
-      "destination": "/api/tasks"
+      "src": "client/package.json",
+      "use": "@vercel/static-build"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/tasks",
+      "dest": "/api/tasks"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/client/dist/$1"
     }
   ]
 }
