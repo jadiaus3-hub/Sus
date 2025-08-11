@@ -3,9 +3,34 @@ import { type Task, type InsertTask, type UpdateTask } from "@shared/schema";
 class LocalStorage {
   private readonly TASKS_KEY = "tasks";
 
+  constructor() {
+    // Initialize with demo data if no tasks exist
+    this.initializeDemo();
+  }
+
+  private initializeDemo() {
+    const tasks = this.getTasks();
+    if (tasks.length === 0) {
+      // Create demo task on first load
+      const demoTask: Task = {
+        id: this.generateId(),
+        title: "ทดสอบ Task แรก",
+        description: "นี่คือ task ทดสอบเพื่อให้แน่ใจว่าระบบทำงานปกติ",
+        priority: "medium",
+        status: "todo",
+        dueDate: null,
+        assignee: null,
+        completed: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      localStorage.setItem(this.TASKS_KEY, JSON.stringify([demoTask]));
+    }
+  }
+
   private generateId(): string {
-    // Generate a simple unique ID
-    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    // Generate a simple unique ID that works in all browsers
+    return 'task_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 15);
   }
 
   private getTasks(): Task[] {

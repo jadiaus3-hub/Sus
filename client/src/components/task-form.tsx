@@ -30,16 +30,20 @@ export default function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFo
       return;
     }
     
-    const submitData = {
-      title: formData.title.trim(),
-      description: formData.description.trim() || undefined,
-      priority: formData.priority as "low" | "medium" | "high" | "critical",
-      status: formData.status as "todo" | "in_progress" | "completed",
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
-      assignee: formData.assignee.trim() || undefined,
-    };
+    try {
+      const submitData = {
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
+        priority: formData.priority as "low" | "medium" | "high" | "critical",
+        status: formData.status as "todo" | "in_progress" | "completed",
+        dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+        assignee: formData.assignee.trim() || undefined,
+      };
 
-    onSubmit(submitData);
+      onSubmit(submitData);
+    } catch (error) {
+      console.error("Form submission error:", error);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
