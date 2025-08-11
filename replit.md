@@ -24,6 +24,8 @@ A frontend-only task management application built with React, TypeScript, and Vi
 - ✅ Simplified frontend to vanilla React + Tailwind CSS only
 - ✅ Fixed 404 deployment issues by moving dist files to root
 - ✅ Configured Vercel functions for API backend
+- ✅ Successfully deployed to Vercel at https://i8i77.vercel.app/
+- ✅ Full-stack Public Task Manager with working API endpoints
 
 ## User Preferences
 

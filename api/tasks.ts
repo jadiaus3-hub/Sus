@@ -87,6 +87,7 @@ export default async function handler(req: any, res: any) {
         return res.status(204).end();
 
       default:
+        res.setHeader('Allow', 'GET, POST, PATCH, DELETE, OPTIONS');
         return res.status(405).json({ message: "Method not allowed" });
     }
   } catch (error) {
