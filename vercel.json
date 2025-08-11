@@ -1,26 +1,17 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/tasks.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+  "functions": {
+    "api/tasks.ts": {
+      "runtime": "@vercel/node@18.x"
     }
-  ],
+  },
   "rewrites": [
     {
       "source": "/api/tasks",
       "destination": "/api/tasks"
     },
     {
-      "source": "/((?!api/.*).*)",
-      "destination": "/client/dist/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
