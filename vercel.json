@@ -13,14 +13,14 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/tasks",
-      "dest": "/api/tasks"
+      "source": "/api/tasks",
+      "destination": "/api/tasks"
     },
     {
-      "src": "/(.*)",
-      "dest": "/client/dist/$1"
+      "source": "/((?!api/.*).*)",
+      "destination": "/client/dist/index.html"
     }
   ]
 }
