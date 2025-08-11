@@ -15,71 +15,77 @@ const API_BASE = '';
 export default function SimpleTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [userName] = useState(() => {
-    const names = ['Visitor'];
+    const names = ['Guest'];
     const randomNum = Math.floor(Math.random() * 1000);
     return `${names[0]}_${randomNum}`;
   });
 
-  // Generate unique ID
-  const generateId = () => {
-    return Date.now().toString();
-  };
-
-  // Load tasks from localStorage
-  const loadTasks = () => {
+  // Load tasks from API
+  const loadTasks = async () => {
     try {
-      const stored = localStorage.getItem('simple-tasks');
-      if (stored) {
-        const parsedTasks = JSON.parse(stored);
-        setTasks(parsedTasks);
+      const response = await fetch('/api/tasks');
+      if (response.ok) {
+        const data = await response.json();
+        setTasks(data);
       }
     } catch (error) {
       console.error('Failed to load tasks:', error);
     }
   };
 
-  // Save tasks to localStorage
-  const saveTasks = (newTasks: Task[]) => {
+  useEffect(() => {
+    loadTasks();
+    const interval = setInterval(loadTasks, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const addTask = async () => {
+    if (!newTaskTitle.trim()) return;
+    
+    setIsLoading(true);
     try {
-      localStorage.setItem('simple-tasks', JSON.stringify(newTasks));
-      setTasks(newTasks);
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title: newTaskTitle.trim(),
+          createdBy: userName
+        })
+      });
+      
+      if (response.ok) {
+        setNewTaskTitle("");
+        await loadTasks();
+      }
     } catch (error) {
-      console.error('Failed to save tasks:', error);
+      console.error('Failed to add task:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
+  const toggleTask = async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
 
-  const addTask = () => {
-    if (!newTaskTitle.trim()) return;
-    
-    const newTask: Task = {
-      id: generateId(),
-      title: newTaskTitle.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-      completedBy: undefined
-    };
-
-    const newTasks = [...tasks, newTask];
-    saveTasks(newTasks);
-    setNewTaskTitle("");
-  };
-
-  const toggleTask = (id: string) => {
-    const newTasks = tasks.map(task => 
-      task.id === id 
-        ? { 
-            ...task, 
-            completed: !task.completed,
-            completedBy: !task.completed ? userName : undefined
-          }
-        : task
-    );
-    saveTasks(newTasks);
+    try {
+      const response = await fetch(`/api/tasks?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          completed: !task.completed,
+          completedBy: !task.completed ? userName : undefined
+        })
+      });
+      
+      if (response.ok) {
+        await loadTasks();
+      }
+    } catch (error) {
+      console.error('Failed to toggle task:', error);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -117,7 +123,7 @@ export default function SimpleTasks() {
             />
             <Button 
               type="submit"
-              disabled={!newTaskTitle.trim()}
+              disabled={isLoading || !newTaskTitle.trim()}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
               data-testid="button-add-task"
             >

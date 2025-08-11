@@ -1,8 +1,20 @@
 {
+  "functions": {
+    "api/tasks.ts": {
+      "runtime": "@vercel/node"
+    },
+    "api/tasks/[id].ts": {
+      "runtime": "@vercel/node"
+    }
+  },
   "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
   "framework": "vite",
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

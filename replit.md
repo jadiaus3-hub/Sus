@@ -14,6 +14,10 @@ A frontend-only task management application built with React, TypeScript, and Vi
 - ✅ Created responsive layout optimized for mobile and desktop
 - ✅ Verified all dependencies and server configuration
 - ✅ Ensured proper client/server separation and security practices
+- ✅ Converted to full-stack Vercel deployment with serverless functions
+- ✅ Created /api/tasks.ts for Vercel Functions backend
+- ✅ Updated frontend to use API calls instead of localStorage
+- ✅ Configured vercel.json for full-stack deployment
 
 ## User Preferences
 
