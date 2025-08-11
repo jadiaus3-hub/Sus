@@ -1,17 +1,4 @@
-// Vercel Function types
-interface VercelRequest {
-  method?: string;
-  body?: any;
-  query?: { [key: string]: string | string[] };
-  headers?: { [key: string]: string };
-}
-
-interface VercelResponse {
-  status(code: number): VercelResponse;
-  json(object: any): void;
-  end(): void;
-  setHeader(name: string, value: string): void;
-}
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface Task {
   id: string;
