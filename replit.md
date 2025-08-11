@@ -2,7 +2,19 @@
 
 ## Overview
 
-A full-stack task management application built with React, Express, and PostgreSQL. The application provides a comprehensive dashboard for managing tasks with CRUD operations, filtering capabilities, and real-time statistics. Users can create, edit, delete, and track tasks with different priorities and statuses, including due date management and assignee tracking.
+A frontend-only task management application built with React, TypeScript, and Vite. The application provides a comprehensive dashboard for managing tasks with CRUD operations, filtering capabilities, and statistics. Users can create, edit, delete, and track tasks with different priorities and statuses, including due date management and assignee tracking. Data is persisted using localStorage, making it perfect for deployment on static hosting platforms like Vercel.
+
+## Recent Changes (August 11, 2025)
+
+- ✅ Converted from full-stack to frontend-only application
+- ✅ Replaced PostgreSQL/Drizzle with localStorage-based storage
+- ✅ Updated Zod schemas for frontend-only validation
+- ✅ Created LocalStorage service for data persistence
+- ✅ Updated React Query integration for localStorage
+- ✅ Added Vercel deployment configuration
+- ✅ Optimized build process for static deployment
+- ✅ Fixed task creation with custom ID generation
+- ✅ Removed server dependencies for 100% Vercel compatibility
 
 ## User Preferences
 
@@ -23,25 +35,15 @@ The client uses React with TypeScript and implements a modern component-based ar
 
 The frontend follows a clean separation with dedicated folders for components, pages, hooks, and utilities. The architecture emphasizes reusable UI components and type-safe data handling.
 
-### Backend Architecture
+### Storage Architecture
 
-Express.js server with TypeScript providing REST API endpoints:
+Frontend localStorage-based data persistence:
 
-- **API Structure**: RESTful endpoints for task CRUD operations and statistics
-- **Data Layer**: Abstract storage interface with in-memory implementation (MemStorage)
-- **Schema Validation**: Zod schemas for request/response validation
-- **Error Handling**: Centralized error handling middleware
-- **Development Tools**: Hot module replacement with Vite integration in development
-
-The backend uses an interface-based storage abstraction, making it easy to swap storage implementations without changing business logic.
-
-### Database Schema
-
-PostgreSQL database with Drizzle ORM:
-
-- **Tasks Table**: Comprehensive task entity with fields for title, description, priority, status, due dates, assignee, and timestamps
-- **Schema Management**: Drizzle migrations for version-controlled database changes
-- **Type Safety**: Full TypeScript integration with inferred types from schema definitions
+- **Storage Service**: LocalStorage class implementing CRUD operations
+- **Data Structure**: Task objects with comprehensive properties (title, description, priority, status, due dates, assignee, timestamps)
+- **ID Generation**: Custom UUID generation compatible with all browsers
+- **Type Safety**: Full TypeScript integration with Zod schema validation
+- **Data Persistence**: Browser localStorage ensures data survives page refreshes and browser sessions
 
 ### Data Validation
 

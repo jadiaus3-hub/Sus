@@ -3,6 +3,11 @@ import { type Task, type InsertTask, type UpdateTask } from "@shared/schema";
 class LocalStorage {
   private readonly TASKS_KEY = "tasks";
 
+  private generateId(): string {
+    // Generate a simple unique ID
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+  }
+
   private getTasks(): Task[] {
     try {
       const tasks = localStorage.getItem(this.TASKS_KEY);
@@ -35,7 +40,7 @@ class LocalStorage {
 
   async createTask(insertTask: InsertTask): Promise<Task> {
     const tasks = this.getTasks();
-    const id = crypto.randomUUID();
+    const id = this.generateId();
     const now = new Date();
     
     const task: Task = {

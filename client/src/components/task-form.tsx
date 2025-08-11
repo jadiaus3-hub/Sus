@@ -26,9 +26,17 @@ export default function TaskForm({ task, onSubmit, onCancel, isLoading }: TaskFo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.title.trim()) {
+      return;
+    }
+    
     const submitData = {
-      ...formData,
+      title: formData.title.trim(),
+      description: formData.description.trim() || undefined,
+      priority: formData.priority as "low" | "medium" | "high" | "critical",
+      status: formData.status as "todo" | "in_progress" | "completed",
       dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+      assignee: formData.assignee.trim() || undefined,
     };
 
     onSubmit(submitData);
